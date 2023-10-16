@@ -7,7 +7,7 @@ clean() {
     rm -f Ext2
 
     # 删除中间文件
-    rm -f main.o init.o
+    rm -f main.o init.o bitmap.o
 }
 
 # 编译函数
@@ -18,11 +18,13 @@ compile() {
     # 编译init.c文件
     gcc -c init.c -o init.o
 
+    gcc -c bitmap.c -o bitmap.o
+
     # 将main.o和init.o链接为可执行文件
-    gcc main.o init.o -o ext2_fs
+    gcc main.o init.o bitmap.o -o ext2_fs
 
     # 清理中间文件
-    rm main.o init.o
+    rm main.o init.o bitmap.o
 }
 
 # 根据参数执行相应操作

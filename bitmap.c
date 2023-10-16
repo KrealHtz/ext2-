@@ -1,67 +1,35 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include "bitmap.h"
 
-// 创建指定大小的位图
-Bitmap *createBitmap(unsigned int size) {
-    Bitmap *bitmap = (Bitmap *)malloc(sizeof(Bitmap));
+int find_first_free_bit(unsigned char* bitbuf, int num_bytes) {
+    for (int i = 0; i < num_bytes; i++) {
+        if (bitbuf[i] != 0xFF) { // 检查字节是否有空闲位
+            unsigned char mask = 1; // 位掩码，从最低位开始检查
 
-    // 计算位图所需的字节数
-    unsigned int bytes = size / 8;
-    if (size % 8 != 0) {
-        bytes++;
+            for (int j = 0; j < 8; j++) {
+                if ((bitbuf[i] & mask) == 0) { // 检查位是否为0（空闲）
+                    return (i * 8) + j; // 返回位的索引
+                }
+                mask <<= 1; // 左移位掩码，检查下一位
+            }
+        }
     }
-
-    // 分配内存并初始化为0
-    bitmap->data = (unsigned char *)calloc(bytes, sizeof(unsigned char));
-    bitmap->size = size;
-
-    return bitmap;
+    return -1; // 没有找到空闲位
 }
 
-// 销毁位图
-void destroyBitmap(Bitmap *bitmap) {
-    free(bitmap->data);
-    free(bitmap);
+void set_bit(unsigned char* bitbuf, int bit_index) {
+    int byte_index = bit_index / 8;     // 计算位索引对应的字节索引
+    int bit_offset = bit_index % 8;     // 计算位索引相对于字节的偏移量
+
+    unsigned char mask = 1 << bit_offset;  // 创建一个掩码，将特定位设置为1
+
+    bitbuf[byte_index] |= mask;   // 将指定位设置为1
 }
 
-// 设置指定位置的位为1
-void setBit(Bitmap *bitmap, unsigned int position) {
-    if (position >= bitmap->size) {
-        return;
-    }
+void clear_bit(unsigned char* bitbuf, int bit_index) {
+    int byte_index = bit_index / 8;     // 计算位索引对应的字节索引
+    int bit_offset = bit_index % 8;     // 计算位索引相对于字节的偏移量
 
-    unsigned int byteIndex = position / 8;
-    unsigned int bitIndex = position % 8;
-    bitmap->data[byteIndex] |= (1 << bitIndex);
-}
+    unsigned char mask = ~(1 << bit_offset);  // 创建一个掩码，将特定位设置为0
 
-// 检查指定位置的位是否为1
-bool checkBit(Bitmap *bitmap, unsigned int position) {
-    if (position >= bitmap->size) {
-        return false;
-    }
-
-    unsigned int byteIndex = position / 8;
-    unsigned int bitIndex = position % 8;
-    return (bitmap->data[byteIndex] & (1 << bitIndex)) != 0;
-}
-
-int main() {
-    // 创建一个大小为16的位图
-    Bitmap *bitmap = createBitmap(16);
-
-    // 设置第3位和第9位为1
-    setBit(bitmap, 2);
-    setBit(bitmap, 8);
-
-    // 检查第5位和第9位是否为1
-    printf("Bit 4: %d\n", checkBit(bitmap, 4));
-    printf("Bit 8: %d\n", checkBit(bitmap, 8));
-
-    // 销毁位图
-    destroyBitmap(bitmap);
-
-    return 0;
+    bitbuf[byte_index] &= mask;   // 将指定位设置为0
 }

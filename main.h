@@ -19,5 +19,7 @@ extern void write_file(char tmp[9]);
 extern void ls(void);
 extern void check_disk(void);
 extern void test_inode(void);
+extern void rm_inode(unsigned short del_num);
+extern void test_dir(void);
 
 #endif

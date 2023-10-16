@@ -1,6 +1,7 @@
 #ifndef _INIT_H
 #define _INIT_H
 #include "main.h"
+#include "bitmap.h"
 
 #define VOLUME_NAME	"EXT2FS"   // 卷名
 #define BLOCK_SIZE 64*1024*1024	       // 块大小
@@ -14,6 +15,7 @@
 
 #define BLOCK_BITMAP (512+512) // 块位图起始地址
 #define INODE_BITMAP (1024+512)// inode 位图起始地址
+#define BITMAP_SIZE 512
 
 #define INODE_TABLE (1536+512) // 索引节点表起始地址 4*512
 #define INODE_SIZE 64	       // 每个inode的大小是64B
@@ -84,7 +86,7 @@ static struct inode inode_area[1];  // inode缓冲区
 static unsigned char bitbuf[512]={0}; // 位图缓冲区
 static unsigned char ibuf[512]={0};
 static struct dir_entry dir[32];   // 目录项缓冲区 32*16=512
-static char Buffer[512];  // 针对数据块的缓冲区
+static char Buffer[BLOCK_SIZE];  // 针对数据块的缓冲区
 static char tempbuf[4096];	// 文件写入缓冲区
 static FILE *fp;	// 虚拟磁盘指针
 

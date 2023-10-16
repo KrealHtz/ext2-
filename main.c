@@ -2,6 +2,7 @@
 #include <string.h>
 #include "main.h"
 #include "init.h"
+#include "bitmap.h"
 
 int main(int argc,char **argv)
 {
@@ -93,9 +94,13 @@ int main(int argc,char **argv)
             }
             printf("get innode test sucess!!\n");
         }
-        else if(!strcmp(command, "test1")){
-            test_inode();
+        else if(!strcmp(command, "testd")){
+            test_dir();
         }
+        else if(!strcmp(command, "rminode")){
+            rm_inode(5);
+        }
+
         else printf("No this Command,Please check!\n");
         getchar();
         //while((getchar())!='\n');

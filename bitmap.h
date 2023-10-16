@@ -1,16 +1,12 @@
 #ifndef BITMAP_H
 #define BITMAP_H
 
-#include <stdbool.h>
+#include <stdio.h>
 
-typedef struct {
-    unsigned int size;  // 位图大小（以位为单位）
-    unsigned char *data;  // 位图数据
-} Bitmap;
+int find_first_free_bit(unsigned char* bitbuf, int num_bytes);
 
-Bitmap *createBitmap(unsigned int size);
-void destroyBitmap(Bitmap *bitmap);
-void setBit(Bitmap *bitmap, unsigned int position);
-bool checkBit(Bitmap *bitmap, unsigned int position);
+void set_bit(unsigned char* bitbuf, int bit_index);
 
-#endif  /* BITMAP_H */
+void clear_bit(unsigned char* bitbuf, int bit_index);
+
+#endif  // BITMAP_H
