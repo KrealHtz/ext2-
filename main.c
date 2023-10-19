@@ -87,6 +87,15 @@ int main(int argc,char **argv)
         {
         	break;
         }
+        else if(!strcmp(command, "test")){
+            for(int i = 0; i < 4095; i ++){
+                test_inode();
+            }
+            printf("get innode test sucess!!\n");
+        }
+        else if(!strcmp(command, "test1")){
+            test_inode();
+        }
         else printf("No this Command,Please check!\n");
         getchar();
         //while((getchar())!='\n');

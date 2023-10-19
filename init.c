@@ -168,7 +168,7 @@ static int get_inode(void) // 分配一个inode
     update_inode_bitmap();
     gdt[0].bg_free_inodes_count--;
     update_group_desc();
-    //printf("%d\n",last_alloc_inode);
+    printf("alloced inode number is %d\n",last_alloc_inode);
     return last_alloc_inode;
 }
 
@@ -1053,6 +1053,9 @@ void ls(void)
         }
         i++;
     }
+}
+void test_inode(void){
+    get_inode();
 }
 
 //检查磁盘状态
