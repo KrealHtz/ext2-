@@ -12,7 +12,7 @@ static void update_super_block(void) //写超级块
 
 static void reload_super_block(void) //读超级块
 {
-    fseek(fp,DISK_START,SEEK_SET);
+    fseek(fp,DISK_START,SEEK_SET); //打开文件并文件开头开始写
     fread(sb_block,SB_SIZE,1,fp);//读取内容到超级块缓冲区中
 }
 
@@ -317,20 +317,21 @@ void initialize_disk(void)  //初始化磁盘
     {
     	fopen_table[i]=0; //清空缓冲表
     }
-    for(i=0;i<BLOCK_SIZE;i++)
-    {
-    	Buffer[i]=0; // 清空缓冲区
-    }
+    // for(i=0;i<BLOCK_SIZE;i++)
+    // {
+    // 	Buffer[i]=0; // 清空缓冲区
+    // }
+    memset(Buffer, 0, BLOCK_SIZE);
     if(fp!=NULL)
     {
     	fclose(fp);
     }
     fp=fopen("./Ext2","w+"); //此文件大小是4612*512=2361344B，用此文件来模拟文件系统
     fseek(fp,DISK_START,SEEK_SET);//将文件指针从0开始
-    for(i=0;i<DISK_SIZE;i++)
-    {
-    	fwrite(Buffer,BLOCK_SIZE,1,fp); // 清空文件，即清空磁盘全部用0填充 Buffer为缓冲区起始地址，BLOCK_SIZE表示读取大小，1表示写入对象的个数*/
-    }
+    // for(i=0;i<DISK_SIZE;i++)
+    // {
+    // 	fwrite(Buffer,BLOCK_SIZE,1,fp); // 清空文件，即清空磁盘全部用0填充 Buffer为缓冲区起始地址，BLOCK_SIZE表示读取大小，1表示写入对象的个数*/
+    // }
     // 初始化超级块内容
     reload_super_block();
     strcpy(sb_block[0].sb_volume_name,VOLUME_NAME);
