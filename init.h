@@ -3,7 +3,7 @@
 #include "main.h"
 
 #define VOLUME_NAME	"EXT2FS"   // 卷名
-#define BLOCK_SIZE 512	       // 块大小
+#define BLOCK_SIZE 64*1024*1024	       // 块大小
 #define DISK_SIZE	4612	   //磁盘总块数
 
 #define DISK_START 0	       // 磁盘开始地址
@@ -19,7 +19,7 @@
 #define INODE_SIZE 64	       // 每个inode的大小是64B
 #define INODE_TABLE_COUNTS	4096 // inode entry 数
 
-#define DATA_BLOCK (263680+512)	// 数据块起始地址 4*512+4096*64
+#define DATA_BLOCK (64*1024*1024)	// 数据块起始地址 4*512+4096*64
 #define DATA_BLOCK_COUNTS	4096	// 数据块数
 
 #define BLOCKS_PER_GROUP	4612 // 每组中的块数
@@ -29,8 +29,8 @@ struct super_block // 32 B
 	char sb_volume_name[16]; //文件系统名
 	unsigned short sb_disk_size; //磁盘总大小
 	unsigned short sb_blocks_per_group; // 每组中的块数
-	unsigned short sb_size_per_block;	// 块大小
-	char sb_pad[10];   //填充
+	unsigned long int sb_size_per_block;	// 块大小
+	char sb_pad[8];   //填充
 };
 
 struct group_desc // 32 B

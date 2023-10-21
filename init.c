@@ -47,7 +47,7 @@ static void reload_inode_entry(unsigned short i) // 读第i个inode
 
 static void update_dir(unsigned short i) //   写第i个 数据块
 {
-    fp=fopen("./Ext2","r+");
+    fp=fopen("./Ext2","r+"); 
     fseek(fp,DATA_BLOCK+i*BLOCK_SIZE,SEEK_SET);
     fwrite(dir,BLOCK_SIZE,1,fp);
     fflush(fp);
@@ -101,7 +101,7 @@ static void reload_block(unsigned short i) // 读第i个数据块
 {
     fseek(fp,DATA_BLOCK+i*BLOCK_SIZE,SEEK_SET);
     fread(Buffer,BLOCK_SIZE,1,fp);
-}
+} 
 
 
 static int alloc_block(void) // 分配一个数据块,返回数据块号
@@ -321,7 +321,7 @@ void initialize_disk(void)  //初始化磁盘
     // {
     // 	Buffer[i]=0; // 清空缓冲区
     // }
-    memset(Buffer, 0, BLOCK_SIZE);
+    // memset(Buffer, 0, BLOCK_SIZE);
     if(fp!=NULL)
     {
     	fclose(fp);
@@ -963,6 +963,108 @@ void write_file(char tmp[9]) // 写文件
     }
 }
 
+
+//文件以添加写方式写入
+void write_file_append(char tmp[9], char* buf) // 写文件
+{
+    unsigned short flag,i,j,k,size=0,need_blocks,length;
+    flag=reserch_file(tmp,1,&i,&j,&k);
+    if(flag)
+    {
+        if(search_file(dir[k].inode))
+        {
+            reload_inode_entry(dir[k].inode);
+            if(!(inode_area[0].i_mode&2)) // i_mode:111b:读,写,执行
+            {
+                printf("The file %s can not be writed!\n",tmp);
+                return;
+            }
+            fflush(stdin);
+            while(1)
+            {
+                tempbuf[size]=getchar();
+                if(tempbuf[size]=='#')
+                {
+                    tempbuf[size]='\0';
+                    break;
+                }
+                if(size>=4095)
+                {
+                    printf("Sorry,the max size of a file is 4KB!\n");
+                    break;
+                }
+                size++;
+            }
+            if(size>=4095)
+            {
+            	length=4096;
+            }
+            else
+            {
+            	length=strlen(tempbuf);
+            }
+            //计算需要的数据块数目
+            need_blocks=length/512;
+            if(length%512)
+            {
+            	need_blocks++;
+            }
+            if(need_blocks<9) // 文件最大 8 个 blocks(512 bytes)
+            {
+                // 分配文件所需块数目
+                //因为以覆盖写的方式写，要先判断原有的数据块数目
+                if(inode_area[0].i_blocks<=need_blocks)
+                {
+                    while(inode_area[0].i_blocks<need_blocks)
+                    {
+                        inode_area[0].i_block[inode_area[0].i_blocks]=alloc_block();
+                        inode_area[0].i_blocks++;
+                    }
+                }
+                else
+                {
+                    while(inode_area[0].i_blocks>need_blocks)
+                    {
+                        remove_block(inode_area[0].i_block[inode_area[0].i_blocks - 1]);
+                        inode_area[0].i_blocks--;
+                    }
+                }
+                j=0;
+                while(j<need_blocks)
+                {
+                    if(j!=need_blocks-1)
+                    {
+                        reload_block(inode_area[0].i_block[j]);
+                        memcpy(Buffer,tempbuf+j*BLOCK_SIZE,BLOCK_SIZE);
+                        update_block(inode_area[0].i_block[j]);
+                    }
+                    else
+                    {
+                        reload_block(inode_area[0].i_block[j]);
+                        memcpy(Buffer,tempbuf+j*BLOCK_SIZE,length-j*BLOCK_SIZE);
+                        inode_area[0].i_size=length;
+                        update_block(inode_area[0].i_block[j]);
+                    }
+                    j++;
+                }
+                update_inode_entry(dir[k].inode);
+            }
+            else
+            {
+            	printf("Sorry,the max size of a file is 4KB!\n");
+            }
+        }
+        else
+        {
+        	printf("The file %s has not opened!\n",tmp);
+        }
+    }
+    else
+    {
+    	printf("The file %s does not exist!\n",tmp);
+    }
+}
+
 //查看目录下的内容
 void ls(void)
 {
@@ -1066,6 +1168,6 @@ void check_disk(void)
 	printf("volume name       : %s\n", sb_block[0].sb_volume_name);
 	printf("disk size         : %d(blocks)\n", sb_block[0].sb_disk_size);
 	printf("blocks per group  : %d(blocks)\n", sb_block[0].sb_blocks_per_group);
-	printf("ext2 file size    : %d(kb)\n", sb_block[0].sb_disk_size*sb_block[0].sb_size_per_block/1024);
-	printf("block size        : %d(kb)\n", sb_block[0].sb_size_per_block);
+	printf("ext2 file size    : %ld(kb)\n", sb_block[0].sb_disk_size*sb_block[0].sb_size_per_block/1024);
+	printf("block size        : %ld(kb)\n", sb_block[0].sb_size_per_block);
 }

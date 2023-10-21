@@ -3,30 +3,30 @@
 #include <stdbool.h>
 #include "bitmap.h"
 
-// åˆ›å»ºæŒ‡å®šå¤§å°çš„ä½å›¾
+// ´´½¨Ö¸¶¨´óĞ¡µÄÎ»Í¼
 Bitmap *createBitmap(unsigned int size) {
     Bitmap *bitmap = (Bitmap *)malloc(sizeof(Bitmap));
 
-    // è®¡ç®—ä½å›¾æ‰€éœ€çš„å­—èŠ‚æ•°
+    // ¼ÆËãÎ»Í¼ËùĞèµÄ×Ö½ÚÊı
     unsigned int bytes = size / 8;
     if (size % 8 != 0) {
         bytes++;
     }
 
-    // åˆ†é…å†…å­˜å¹¶åˆå§‹åŒ–ä¸º0
+    // ·ÖÅäÄÚ´æ²¢³õÊ¼»¯Îª0
     bitmap->data = (unsigned char *)calloc(bytes, sizeof(unsigned char));
     bitmap->size = size;
 
     return bitmap;
 }
 
-// é”€æ¯ä½å›¾
+// Ïú»ÙÎ»Í¼
 void destroyBitmap(Bitmap *bitmap) {
     free(bitmap->data);
     free(bitmap);
 }
 
-// è®¾ç½®æŒ‡å®šä½ç½®çš„ä½ä¸º1
+// ÉèÖÃÖ¸¶¨Î»ÖÃµÄÎ»Îª1
 void setBit(Bitmap *bitmap, unsigned int position) {
     if (position >= bitmap->size) {
         return;
@@ -37,7 +37,7 @@ void setBit(Bitmap *bitmap, unsigned int position) {
     bitmap->data[byteIndex] |= (1 << bitIndex);
 }
 
-// æ£€æŸ¥æŒ‡å®šä½ç½®çš„ä½æ˜¯å¦ä¸º1
+// ¼ì²éÖ¸¶¨Î»ÖÃµÄÎ»ÊÇ·ñÎª1
 bool checkBit(Bitmap *bitmap, unsigned int position) {
     if (position >= bitmap->size) {
         return false;
@@ -49,18 +49,18 @@ bool checkBit(Bitmap *bitmap, unsigned int position) {
 }
 
 int main() {
-    // åˆ›å»ºä¸€ä¸ªå¤§å°ä¸º16çš„ä½å›¾
+    // ´´½¨Ò»¸ö´óĞ¡Îª16µÄÎ»Í¼
     Bitmap *bitmap = createBitmap(16);
 
-    // è®¾ç½®ç¬¬3ä½å’Œç¬¬9ä½ä¸º1
+    // ÉèÖÃµÚ3Î»ºÍµÚ9Î»Îª1
     setBit(bitmap, 2);
     setBit(bitmap, 8);
 
-    // æ£€æŸ¥ç¬¬5ä½å’Œç¬¬9ä½æ˜¯å¦ä¸º1
+    // ¼ì²éµÚ5Î»ºÍµÚ9Î»ÊÇ·ñÎª1
     printf("Bit 4: %d\n", checkBit(bitmap, 4));
     printf("Bit 8: %d\n", checkBit(bitmap, 8));
 
-    // é”€æ¯ä½å›¾
+    // Ïú»ÙÎ»Í¼
     destroyBitmap(bitmap);
 
     return 0;
