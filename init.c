@@ -48,15 +48,15 @@ static void reload_inode_entry(unsigned short i) {
 // 写目录项
 static void update_dir(unsigned short i) {
     fp = fopen("./Ext2", "r+");
-    fseek(fp, DATA_BLOCK + i * BLOCK_SIZE, SEEK_SET);
-    fwrite(dir, 512, 1, fp); //原先是读入一整块，修改后读入等于目录项缓冲区
+    fseek(fp, DIR_START, SEEK_SET);
+    fwrite(dir, DIR_SIZE, 1, fp); //原先是读入一整块，修改后读入等于目录项缓冲区
     fflush(fp);
 }
 
 // 读目录项
 static void reload_dir(unsigned short i) {
-    fseek(fp, DATA_BLOCK + i * BLOCK_SIZE, SEEK_SET);
-    fread(dir, 512, 1, fp);
+    fseek(fp, DIR_START, SEEK_SET);
+    fread(dir, DIR_SIZE, 1, fp);
     // fclose(fp);
 }
 
@@ -272,21 +272,13 @@ void initialize_disk(void) {
     {
         fopen_table[i] = 0; // 清空缓冲表
     }
-    // for(i=0;i<BLOCK_SIZE;i++)
-    // {
-    // 	Buffer[i]=0; // 清空缓冲区
-    // }
-    memset(Buffer, 0, BLOCK_SIZE);
+
     if (fp != NULL)
     {
         fclose(fp);
     }
     fp = fopen("./Ext2", "w+");      // 此文件大小是4612*512=2361344B，用此文件来模拟文件系统
     fseek(fp, DISK_START, SEEK_SET); // 将文件指针从0开始
-    // for(i=0;i<DISK_SIZE;i++)
-    // {
-    // 	fwrite(Buffer,BLOCK_SIZE,1,fp); // 清空文件，即清空磁盘全部用0填充 Buffer为缓冲区起始地址，BLOCK_SIZE表示读取大小，1表示写入对象的个数*/
-    // }
     // 初始化超级块内容
     reload_super_block();
     strcpy(sb_block[0].sb_volume_name, VOLUME_NAME);
@@ -294,9 +286,11 @@ void initialize_disk(void) {
     sb_block[0].sb_blocks_per_group = BLOCKS_PER_GROUP;
     sb_block[0].sb_size_per_block = BLOCK_SIZE;
     update_super_block();
-    // 根目录的inode号为1
-    reload_inode_entry(1);
 
+    // 根目录的inode号为1
+    // reload_inode_entry(1);
+
+    // read dir form disk 缺少清空目录项的操作
     reload_dir(0);
     
     strcpy(current_path, "[root@ /"); // 修改路径名为根目录
@@ -314,27 +308,27 @@ void initialize_disk(void) {
     reload_block_bitmap();
     reload_inode_bitmap();
 
-    inode_area[0].i_mode = 518;
-    inode_area[0].i_blocks = 0;
-    inode_area[0].i_size = 32;
-    inode_area[0].i_atime = 0;
-    inode_area[0].i_ctime = 0;
-    inode_area[0].i_mtime = 0;
-    inode_area[0].i_dtime = 0;
-    inode_area[0].i_block[0] = alloc_block(); // 分配数据块
-    // printf("%d f\n",inode_area[0].i_block[0]);
-    inode_area[0].i_blocks++;
-    current_dir = get_inode();
-    update_inode_entry(current_dir);
+    // inode_area[0].i_mode = 518;
+    // inode_area[0].i_blocks = 0;
+    // inode_area[0].i_size = 32;
+    // inode_area[0].i_atime = 0;
+    // inode_area[0].i_ctime = 0;
+    // inode_area[0].i_mtime = 0;
+    // inode_area[0].i_dtime = 0;
+    // inode_area[0].i_block[0] = alloc_block(); // 分配数据块
+    // // printf("%d f\n",inode_area[0].i_block[0]);
+    // inode_area[0].i_blocks++;
+    // current_dir = get_inode();
+    // update_inode_entry(current_dir);
 
     // 初始化根目录的目录项
-    dir[0].inode = dir[1].inode = current_dir;
-    dir[0].name_len = 0;
-    dir[1].name_len = 0;
-    dir[0].file_type = dir[1].file_type = 2;
-    strcpy(dir[0].name, ".");
-    strcpy(dir[1].name, "..");
-    update_dir(inode_area[0].i_block[0]);
+    // dir[0].inode = dir[1].inode = current_dir;
+    // dir[0].name_len = 0;
+    // dir[1].name_len = 0;
+    // dir[0].file_type = dir[1].file_type = 2;
+    // strcpy(dir[0].name, ".");
+    // strcpy(dir[1].name, "..");
+    // update_dir(inode_area[0].i_block[0]);
     printf("The ext2 file system has been installed!\n");
     check_disk();
     fclose(fp);

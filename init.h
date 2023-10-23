@@ -21,6 +21,11 @@
 #define INODE_SIZE 64	       // 每个inode的大小是64B
 #define INODE_TABLE_COUNTS	4096 // inode entry 数
 
+//定义目录项
+#define DIR_START           2048 + 64 * 4096          //目录项起始地址
+#define DIR_SIZE            512             //目录项大小
+
+
 #define DATA_BLOCK (64*1024*1024)	// 数据块起始地址 4*512+4096*64
 #define DATA_BLOCK_COUNTS	4096	// 数据块数
 
