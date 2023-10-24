@@ -345,7 +345,7 @@ void initialize_memory(void)
         fopen_table[i] = 0;
     }
     strcpy(current_path, "[root@ /");
-    current_dir = 1;
+    // current_dir = 1;
     fp = fopen("./Ext2", "r+");
     if (fp == NULL)
     {
@@ -484,7 +484,7 @@ void mkdir(char tmp[9], int type)
 void cat(char tmp[9], int type)
 {
     unsigned short tmpno, i, j, k, flag;
-    reload_inode_entry(current_dir);
+    // reload_inode_entry(current_dir); //读取当前目录的inode
     if (!reserch_file(tmp, type, &i, &j, &k))
     {
         if (inode_area[0].i_size == 4096)
