@@ -78,8 +78,6 @@ struct dir_entry //16B
 };
 
 
-static unsigned short last_alloc_inode; // 最近分配的节点号 */
-static unsigned short last_alloc_block; // 最近分配的数据块号 */
 static unsigned short current_dir;   // 当前目录的节点号 */
 static unsigned short last_alloc_dir_no;   // 当前分配到的目录项节点号 */
 
@@ -93,7 +91,7 @@ static struct inode inode_area[1];  // inode缓冲区
 static unsigned char bitbuf[512]={0}; // 位图缓冲区
 static unsigned char ibuf[512]={0};
 static struct dir_entry dir[64];   // 目录项缓冲区 64*16=1024
-static char Buffer[BLOCK_SIZE];  // 针对数据块的缓冲区
+static char *Buffer;  // 针对数据块的缓冲区
 static char tempbuf[4096];	// 文件写入缓冲区
 static HashTable* dir_table; //哈希表存放目录项
 static FILE *fp;	// 虚拟磁盘指针

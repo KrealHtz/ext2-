@@ -23,9 +23,12 @@ int main() {
     // 自定义时间格式
     char formattedTime[20];
 
-
+    
     char* currentTime = getCurrentTime();
 
+    time_t start, end;
+    start = time(NULL);
+    printf("start=%ld\n", start);
     // 打印当前时间
     printf("Current time: %s\n", currentTime);
     // 打印格式化后的时间

@@ -30,7 +30,7 @@ compile() {
 }
 
 # 根据参数执行相应操作
-if [ "$1" == "clean" ]; then
+if [ "$1" == "c" ]; then
     clean
     echo "清理完成"
 else
