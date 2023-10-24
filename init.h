@@ -2,6 +2,7 @@
 #define _INIT_H
 #include "main.h"
 #include "bitmap.h"
+#include "hash_table.h"
 
 #define VOLUME_NAME	"EXT2FS"   // 卷名
 #define BLOCK_SIZE 64*1024*1024	       // 块大小
@@ -23,7 +24,7 @@
 
 //定义目录项
 #define DIR_START           2048 + 64 * 4096          //目录项起始地址
-#define DIR_SIZE            512             //目录项大小
+#define DIR_SIZE            1024             //目录项大小
 
 
 #define DATA_BLOCK (64*1024*1024)	// 数据块起始地址 4*512+4096*64
@@ -69,17 +70,18 @@ struct inode // 64 B
 };
 struct dir_entry //16B
 {
-    unsigned short inode; //索引节点号
-    unsigned short rec_len; //目录项长度
-    unsigned short name_len; //文件名长度
-    char file_type; //文件类型(1 普通文件 2 目录.. )
-    char name[9]; //文件名
+    int inode; //索引节点号
+    // unsigned short rec_len; //目录项长度
+    // unsigned short name_len; //文件名长度
+    // char file_type; //文件类型(1 普通文件 2 目录.. )
+    char name[12]; //文件名
 };
 
 
 static unsigned short last_alloc_inode; // 最近分配的节点号 */
 static unsigned short last_alloc_block; // 最近分配的数据块号 */
 static unsigned short current_dir;   // 当前目录的节点号 */
+static unsigned short last_alloc_dir_no;   // 当前分配到的目录项节点号 */
 
 static unsigned short current_dirlen; // 当前路径长度 */
 
@@ -90,9 +92,10 @@ static struct group_desc gdt[1];	// 组描述符缓冲区
 static struct inode inode_area[1];  // inode缓冲区
 static unsigned char bitbuf[512]={0}; // 位图缓冲区
 static unsigned char ibuf[512]={0};
-static struct dir_entry dir[32];   // 目录项缓冲区 32*16=512
+static struct dir_entry dir[64];   // 目录项缓冲区 64*16=1024
 static char Buffer[BLOCK_SIZE];  // 针对数据块的缓冲区
 static char tempbuf[4096];	// 文件写入缓冲区
+static HashTable* dir_table; //哈希表存放目录项
 static FILE *fp;	// 虚拟磁盘指针
 
 
@@ -108,14 +111,14 @@ static void update_block_bitmap(void);  //更新块位图
 static void reload_block_bitmap(void);  //加载块位图
 static void update_inode_bitmap(void);  //更新inode位图
 static void reload_inode_bitmap(void);  //加载inode位图
-static void update_dir(unsigned short i);//更新目录
-static void reload_dir(unsigned short i);//加载目录
+static void update_dir(void);//更新目录
+static void reload_dir(void);//加载目录
 static void update_block(unsigned short i);//更新数据块
 static void reload_block(unsigned short i);//加载数据库
 static int alloc_block(void);//分配数据块
 static int get_inode(void); //得到inode节点
-static unsigned short reserch_file(char tmp[9],int file_type,unsigned short *inode_num,unsigned short *block_num,unsigned short *dir_num);//查找文件
-static void dir_prepare(unsigned short tmp,unsigned short len,int type);
+static int reserch_file(char tmp[12]);//查找文件
+static void dir_prepare(unsigned short tmp);
 static void remove_block(unsigned short del_num);//删除数据块
 static void remove_inode(unsigned short del_num);//删除inode节点
 static unsigned short search_file(unsigned short Ino);//在打开文件表中查找是否已打开文件

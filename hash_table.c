@@ -1,19 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "hash_table.h"
 
-#define TABLE_SIZE 100
 
-typedef struct {
-    char* key;
-    int value;
-} HashNode;
-
-typedef struct {
-    HashNode** slots;
-    int* occupied;
-    int size;
-} HashTable;
 
 unsigned int hash(const char* key) {
     unsigned int hash_val = 0;
@@ -101,22 +91,22 @@ void free_table(HashTable* table) {
     free(table);
 }
 
-int main() {
-    HashTable* table = create_table();
+// int main() {
+//     HashTable* table = create_table();
 
-    insert(table, "apple", 10);
-    insert(table, "banana", 20);
-    insert(table, "orange", 30);
+//     insert(table, "apple", 10);
+//     insert(table, "banana", 20);
+//     insert(table, "orange", 30);
 
-    printf("Value of 'apple': %d\n", lookup(table, "apple"));     // Output: Value of 'apple': 10
-    printf("Value of 'banana': %d\n", lookup(table, "banana"));   // Output: Value of 'banana': 20
-    printf("Value of 'orange': %d\n", lookup(table, "orange"));   // Output: Value of 'orange': 30
+//     printf("Value of 'apple': %d\n", lookup(table, "apple"));     // Output: Value of 'apple': 10
+//     printf("Value of 'banana': %d\n", lookup(table, "banana"));   // Output: Value of 'banana': 20
+//     printf("Value of 'orange': %d\n", lookup(table, "orange"));   // Output: Value of 'orange': 30
 
-    remove_node(table, "banana");
+//     remove_node(table, "banana");
 
-    printf("Value of 'banana' after removal: %d\n", lookup(table, "banana"));   // Output: Value of 'banana' after removal: -1
+//     printf("Value of 'banana' after removal: %d\n", lookup(table, "banana"));   // Output: Value of 'banana' after removal: -1
 
-    free_table(table);
+//     free_table(table);
 
-    return 0;
-}
+//     return 0;
+// }

@@ -17,23 +17,23 @@ int main(int argc,char **argv)
         if(!strcmp(command,"cd")) //进入当前目录下
         {
             scanf("%s",temp);
-            cd(temp);
+            // cd(te??mp);
         }
         else if(!strcmp(command,"mkdir"))  //创建目录
         {
             scanf("%s",temp);
-            mkdir(temp,2);
+            // mkdir(temp,2);
         }
         else if(!strcmp(command,"touch"))    //创建文件
         {
             scanf("%s",temp);
-            cat(temp,1);
+            create(temp,1);
         }
 
         else if(!strcmp(command,"rmdir"))  //删除空目录
         {
             scanf("%s",temp);
-            rmdir(temp);
+            // rmdir(temp);
         }
         else if(!strcmp(command,"rm"))     //删除文件或目录，不提示
         {
