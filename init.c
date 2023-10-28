@@ -4,78 +4,78 @@
 #include "init.h"
 #include <time.h>
 #include "datetime.h"
+#include "dev_io.h"
 
+// // 写超级块
+// static void update_fs_super_block(void) {
+//     fp = fopen("./lpuefs", "r+");
+//     fseek(fp, DISK_START, SEEK_SET);
+//     fwrite(sb_buf, SB_SIZE, 1, fp);
+//     fflush(fp); // 立刻将缓冲区的内容输出，保证磁盘内存数据的一致性
+// }
 
-// 写超级块
-static void update_super_block(void) {
-    fp = fopen("./lpuefs", "r+");
-    fseek(fp, DISK_START, SEEK_SET);
-    fwrite(sb_buf, SB_SIZE, 1, fp);
-    fflush(fp); // 立刻将缓冲区的内容输出，保证磁盘内存数据的一致性
-}
+// // 读超级块
+// static void reload_fs_super_block(void) {
+//     fseek(fp, DISK_START, SEEK_SET); // 打开文件并文件开头开始写
+//     fread(sb_buf, SB_SIZE, 1, fp); // 读取内容到超级块缓冲区中
+// }
 
-// 读超级块
-static void reload_super_block(void) {
-    fseek(fp, DISK_START, SEEK_SET); // 打开文件并文件开头开始写
-    fread(sb_buf, SB_SIZE, 1, fp); // 读取内容到超级块缓冲区中
-}
+// // 写组描述符
+// static void update_fs_group_desc(void) {
+//     fp = fopen("./lpuefs", "r+");
+//     fseek(fp, GDT_START, SEEK_SET);
+//     fwrite(gd_buf, GD_SIZE, 1, fp);
+//     fflush(fp);
+// }
 
-// 写组描述符
-static void update_group_desc(void) {
-    fp = fopen("./lpuefs", "r+");
-    fseek(fp, GDT_START, SEEK_SET);
-    fwrite(gd_buf, GD_SIZE, 1, fp);
-    fflush(fp);
-}
+// // 读组描述符
+// static void reload_fs_group_desc(void) {
+//     fseek(fp, GDT_START, SEEK_SET);
+//     fread(gd_buf, GD_SIZE, 1, fp);
+// }
 
-// 读组描述符
-static void reload_group_desc(void) {
-    fseek(fp, GDT_START, SEEK_SET);
-    fread(gd_buf, GD_SIZE, 1, fp);
-}
+// // 写第i个inode
+// static void update_inode_info(unsigned short i) {
+//     fp = fopen("./lpuefs", "r+");
+//     fseek(fp, INODE_TABLE + (i - 1) * INODE_SIZE, SEEK_SET);
+//     fwrite(inode_workspace, INODE_SIZE, 1, fp);
+//     fflush(fp);
+// }
 
-// 写第i个inode
-static void update_inode_info(unsigned short i) {
-    fp = fopen("./lpuefs", "r+");
-    fseek(fp, INODE_TABLE + (i - 1) * INODE_SIZE, SEEK_SET);
-    fwrite(inode_workspace, INODE_SIZE, 1, fp);
-    fflush(fp);
-}
+// // 读第i个inode
+// static void reload_inode_info(unsigned short i) {
+//     fseek(fp, INODE_TABLE + (i - 1) * INODE_SIZE, SEEK_SET);
+//     fread(inode_workspace, INODE_SIZE, 1, fp);
+// }
 
-// 读第i个inode
-static void reload_inode_info(unsigned short i) {
-    fseek(fp, INODE_TABLE + (i - 1) * INODE_SIZE, SEEK_SET);
-    fread(inode_workspace, INODE_SIZE, 1, fp);
-}
+// // 写目录项
+// static void update_dir(void) {
+//     fp = fopen("./lpuefs", "r+");
+//     fseek(fp, DIR_START, SEEK_SET);
+//     fwrite(dir, DIR_SIZE, 1, fp); //原先是读入一整块，修改后读入等于目录项缓冲区
+//     fflush(fp);
+// }
 
-// 写目录项
-static void update_dir(void) {
-    fp = fopen("./lpuefs", "r+");
-    fseek(fp, DIR_START, SEEK_SET);
-    fwrite(dir, DIR_SIZE, 1, fp); //原先是读入一整块，修改后读入等于目录项缓冲区
-    fflush(fp);
-}
+// //清理目录项
+// static void clear_dir(void) {
+//     char dir_buf[1024];
+//     memset(dir_buf, -1, 1024);
+//     fp = fopen("./lpuefs", "r+");
+//     fseek(fp, DIR_START, SEEK_SET);
+//     fwrite(dir_buf, DIR_SIZE, 1, fp); 
+//     fflush(fp);
+// }
 
-//清理目录项
-static void clear_dir(void) {
-    char dir_buf[1024];
-    memset(dir_buf, -1, 1024);
-    fp = fopen("./lpuefs", "r+");
-    fseek(fp, DIR_START, SEEK_SET);
-    fwrite(dir_buf, DIR_SIZE, 1, fp); 
-    fflush(fp);
-}
-
-// 读目录项
-static void reload_dir(void) {
-    fseek(fp, DIR_START, SEEK_SET);
-    fread(dir, DIR_SIZE, 1, fp);
-    // fclose(fp);
-}
+// // 读目录项
+// static void reload_dir(void) {
+//     fseek(fp, DIR_START, SEEK_SET);
+//     fread(dir, DIR_SIZE, 1, fp);
+//     // fclose(fp);
+// }
 
 // dir_to_hash
 static void dir_to_hash(void) {
-    for(int i = 0; i < 64; i ++){
+    for(int i = 0; i < DIR_LEN; i ++){
         if (dir[i].inode == -1){
             last_alloc_dir_no = i;
             break;
@@ -86,87 +86,85 @@ static void dir_to_hash(void) {
 }
 
 // 写block位图
-static void update_block_bitmap(void) {
+static void update_group_block_bitmap(void) {
     fp = fopen("./lpuefs", "r+");
     fseek(fp, BLOCK_BITMAP, SEEK_SET);
     fwrite(bit_buf, BITMAP_SIZE, 1, fp);
     fflush(fp);
 }
 
-// 读block位图
-static void reload_block_bitmap(void) {
-    fseek(fp, BLOCK_BITMAP, SEEK_SET);
-    fread(bit_buf, BITMAP_SIZE, 1, fp);
-}
+// // 读block位图
+// static void reload_group_block_bitmap(void) {
+//     fseek(fp, BLOCK_BITMAP, SEEK_SET);
+//     fread(bit_buf, BITMAP_SIZE, 1, fp);
+// }
 
-// 写inode位图
-static void update_inode_bitmap(void) {
-    fp = fopen("./lpuefs", "r+");
-    fseek(fp, INODE_BITMAP, SEEK_SET);
-    fwrite(ibuf, BITMAP_SIZE, 1, fp);
-    fflush(fp);
-}
+// // 写inode位图
+// static void update_inode_bitmap(void) {
+//     fp = fopen("./lpuefs", "r+");
+//     fseek(fp, INODE_BITMAP, SEEK_SET);
+//     fwrite(ibuf, BITMAP_SIZE, 1, fp);
+//     fflush(fp);
+// }
 
-// 读inode位图
-static void reload_inode_bitmap(void) {
-    fseek(fp, INODE_BITMAP, SEEK_SET);
-    fread(ibuf, BITMAP_SIZE, 1, fp);
-}
+// // 读inode位图
+// static void reload_inode_bitmap(void) {
+//     fseek(fp, INODE_BITMAP, SEEK_SET);
+//     fread(ibuf, BITMAP_SIZE, 1, fp);
+// }
 
-// 写第i个数据块
-static void update_block(unsigned short i) {
-    fp = fopen("./lpuefs", "r+");
-    fseek(fp, DATA_BLOCK + i * BLOCK_SIZE, SEEK_SET);
-    // fseek(fp,0,SEEK_SET);
-    fwrite(Buffer, BLOCK_SIZE, 1, fp);
-    fflush(fp);
-}
+// // 写第i个数据块
+// static void update_block(unsigned short i) {
+//     fp = fopen("./lpuefs", "r+");
+//     fseek(fp, DATA_BLOCK + i * BLOCK_SIZE, SEEK_SET);
+//     fwrite(Buffer, BLOCK_SIZE, 1, fp);
+//     fflush(fp);
+// }
 
-// 读第i个数据块
-static void reload_block(unsigned short i) {
-    fseek(fp, DATA_BLOCK + i * BLOCK_SIZE, SEEK_SET);
-    fread(Buffer, BLOCK_SIZE, 1, fp);
-}
+// // 读第i个数据块
+// static void reload_block(unsigned short i) {
+//     fseek(fp, DATA_BLOCK + i * BLOCK_SIZE, SEEK_SET);
+//     fread(Buffer, BLOCK_SIZE, 1, fp);
+// }
 
-// 分配一个数据块,返回数据块号
-static int alloc_block(void) {
-    int fist_free_block = 0;
-    if (gd_buf[0].bg_free_blocks_count == 0)
-    {
-        printf("There is no block to be alloced!\n");
-        return (0);
-    }
-    reload_block_bitmap();
+// // 分配一个数据块,返回数据块号
+// static int alloc_block(void) {
+//     int fist_free_block = 0;
+//     if (gd_buf[0].bg_free_blocks_count == 0) {
+//         printf("There is no block to be alloced!\n");
+//         return (0);
+//     }
+//     reload_group_block_bitmap();
 
-    fist_free_block = find_first_free_bit(bit_buf, BITMAP_SIZE);
-    printf("find first free block is %d \n", fist_free_block);
-    set_bit(bit_buf, fist_free_block);
+//     fist_free_block = find_first_free_bit(bit_buf, BITMAP_SIZE);
+//     printf("find first free block is %d \n", fist_free_block);
+//     set_bit(bit_buf, fist_free_block);
 
-    update_block_bitmap();
-    gd_buf[0].bg_free_blocks_count--;
-    update_group_desc();
-    return fist_free_block;
-}
+//     update_group_block_bitmap();
+//     gd_buf[0].bg_free_blocks_count--;
+//     update_fs_group_desc();
+//     return fist_free_block;
+// }
 
-// 申请一个inode
-static int request_inode(void) {
-    int first_free_inode = 0; 
-    int flag = 0;
-    if (gd_buf[0].bg_free_inodes_count == 0) {
-        printf("There is no Inode to be alloced!\n");
-        return 0;
-    }
-    reload_inode_bitmap();
-    first_free_inode = find_first_free_bit(ibuf, BITMAP_SIZE);
-    printf("find first free inode is %d \n", first_free_inode);
-    set_bit(ibuf, first_free_inode);
+// // 申请一个inode
+// static int request_inode(void) {
+//     int first_free_inode = 0; 
+//     int flag = 0;
+//     if (gd_buf[0].bg_free_inodes_count == 0) {
+//         printf("There is no Inode to be alloced!\n");
+//         return 0;
+//     }
+//     reload_inode_bitmap();
+//     first_free_inode = find_first_free_bit(ibuf, BITMAP_SIZE);
+//     printf("find first free inode is %d \n", first_free_inode);
+//     set_bit(ibuf, first_free_inode);
 
-    update_inode_bitmap();
-    gd_buf[0].bg_free_inodes_count--;
-    update_group_desc();
-    printf("alloced inode number is %d\n", first_free_inode);
-    return first_free_inode;
-}
+//     update_inode_bitmap();
+//     gd_buf[0].bg_free_inodes_count--;
+//     update_fs_group_desc();
+//     printf("alloced inode number is %d\n", first_free_inode);
+//     return first_free_inode;
+// }
 
 // 当前目录中查找文件tmp，并得到该文件的 inode 号，失败返回-1
 static int reserch_file(char file_name[12]) {
@@ -192,31 +190,31 @@ static void inode_init(unsigned short file_name) {
     update_inode_info(file_name);
 }
 
-// 删除一个块号
-static void remove_block(unsigned short del_num) {
-    reload_block_bitmap();
+// // 删除一个块号
+// static void remove_block(unsigned short del_num) {
+//     reload_group_block_bitmap();
 
-    clear_bit(bit_buf, del_num); // 位图置为0释放指定块
+//     clear_bit(bit_buf, del_num); // 位图置为0释放指定块
 
-    update_block_bitmap();
+//     update_group_block_bitmap();
 
-    gd_buf[0].bg_free_blocks_count ++;
-    update_group_desc();
-}
+//     gd_buf[0].bg_free_blocks_count ++;
+//     update_fs_group_desc();
+// }
 
-// 删除一个inode 号
-static void remove_inode(unsigned short del_num) {
+// // 删除一个inode 号
+// static void remove_inode(unsigned short del_num) {
 
-    reload_inode_bitmap();
+//     reload_inode_bitmap();
 
-    clear_bit(ibuf, del_num); // 位图置为0释放指定的inode
-    printf("rm %d inode sucess\n", del_num);
+//     clear_bit(ibuf, del_num); // 位图置为0释放指定的inode
+//     printf("rm %d inode sucess\n", del_num);
 
-    update_inode_bitmap();
+//     update_inode_bitmap();
 
-    gd_buf[0].bg_free_inodes_count++;
-    update_group_desc();
-}
+//     gd_buf[0].bg_free_inodes_count++;
+//     update_fs_group_desc();
+// }
 
 // 在打开文件表中查找是否已打开文件
 static unsigned short search_file(unsigned short Inode) {
@@ -251,19 +249,19 @@ void initialize_disk(void) {
     fp = fopen("./lpuefs", "w+");      // 此文件大小是4612*512=2361344B，用此文件来模拟文件系统
     fseek(fp, DISK_START, SEEK_SET); // 将文件指针从0开始
     // 初始化超级块内容
-    reload_super_block();
+    reload_fs_super_block();
     strcpy(sb_buf[0].sb_volume_name, VOLUME_NAME);
     sb_buf[0].sb_disk_size = DISK_SIZE;
     sb_buf[0].sb_blocks_per_group = BLOCKS_PER_GROUP;
     sb_buf[0].sb_size_per_block = BLOCK_SIZE;
-    update_super_block();
+    update_fs_super_block();
 
     // reset dir_entry
     clear_dir();
     reload_dir();
     strcpy(current_path, "[lpue_fs@ /"); // 修改路径名为根目录
     // 初始化组描述符内容
-    reload_group_desc();
+    reload_fs_group_desc();
 
     gd_buf[0].bg_block_bitmap = BLOCK_BITMAP;            // 第一个块位图的起始地址
     gd_buf[0].bg_inode_bitmap = INODE_BITMAP;            // 第一个inode位图的起始地址
@@ -271,9 +269,9 @@ void initialize_disk(void) {
     gd_buf[0].bg_free_blocks_count = DATA_BLOCK_COUNTS;  // 空闲数据块数
     gd_buf[0].bg_free_inodes_count = INODE_TABLE_COUNTS; // 空闲inode数
     gd_buf[0].bg_used_dirs_count = 0;                    // 初始分配给目录的节点数是0
-    update_group_desc();                              // 更新组描述符内容
+    update_fs_group_desc();                              // 更新组描述符内容
 
-    reload_block_bitmap();
+    reload_group_block_bitmap();
     reload_inode_bitmap();
 
     printf("The lpue file system has been installed!\n");
@@ -293,7 +291,7 @@ void initialize_lpuefs(void) {
         printf("The File system does not exist!\n");
         initialize_disk();
     }
-    reload_super_block();
+    reload_fs_super_block();
     if (strcmp(sb_buf[0].sb_volume_name, VOLUME_NAME)) {
         printf("The File system [%s] is not suppoted yet!\n", sb_buf[0].sb_volume_name);
         printf("The File system loaded error!\n");
@@ -303,7 +301,7 @@ void initialize_lpuefs(void) {
     dir_table = create_table();
     reload_dir();
     dir_to_hash();
-    reload_group_desc();
+    reload_fs_group_desc();
 }
 
 // 格式化文件系统
@@ -694,7 +692,7 @@ void test_dir(void){
 // 检查磁盘状态
 void check_disk(void)
 {
-    reload_super_block();
+    reload_fs_super_block();
     printf("volume name       : %s\n", sb_buf[0].sb_volume_name);
     printf("disk size         : %d(blocks)\n", sb_buf[0].sb_disk_size);
     printf("blocks per group  : %d(blocks)\n", sb_buf[0].sb_blocks_per_group);
