@@ -17,5 +17,6 @@ extern void check_disk(void);
 extern void test_inode(void);
 extern void rm_inode(unsigned short del_num);
 extern void test_dir(void);
+extern void write_file_append(int fd, const void *buf, unsigned long n);
 
 #endif

@@ -8,6 +8,7 @@ int main(int argc,char **argv)
 {
     char command[10],temp[9];
     initialize_memory();
+    initialize_memory();
     while(1)
     {
         printf("%s]#",current_path);
@@ -77,8 +78,14 @@ int main(int argc,char **argv)
         else if(!strcmp(command, "testd")){
             test_dir();
         }
-        else if(!strcmp(command, "rminode")){
-            rm_inode(5);
+        else if(!strcmp(command, "testw")){
+            int file_inode = 0;
+            // create("test_file",1);
+            file_inode = open_file("test_file");
+            write_file_append(file_inode, "1111111", 8);
+            write_file_append(file_inode, "2222222", 8);
+            read_file("test_file");
+            close_file("test_file");
         }
 
         else printf("No this Command,Please check!\n");

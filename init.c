@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include "init.h"
 #include <time.h>
+#include "datetime.h"
 
 
 // 写超级块
 static void update_super_block(void) {
-    fp = fopen("./Ext2", "r+");
+    fp = fopen("./lpuefs", "r+");
     fseek(fp, DISK_START, SEEK_SET);
     fwrite(sb_block, SB_SIZE, 1, fp);
     fflush(fp); // 立刻将缓冲区的内容输出，保证磁盘内存数据的一致性
@@ -21,7 +22,7 @@ static void reload_super_block(void) {
 
 // 写组描述符
 static void update_group_desc(void) {
-    fp = fopen("./Ext2", "r+");
+    fp = fopen("./lpuefs", "r+");
     fseek(fp, GDT_START, SEEK_SET);
     fwrite(gdt, GD_SIZE, 1, fp);
     fflush(fp);
@@ -29,14 +30,13 @@ static void update_group_desc(void) {
 
 // 读组描述符
 static void reload_group_desc(void) {
-
     fseek(fp, GDT_START, SEEK_SET);
     fread(gdt, GD_SIZE, 1, fp);
 }
 
 // 写第i个inode
 static void update_inode_entry(unsigned short i) {
-    fp = fopen("./Ext2", "r+");
+    fp = fopen("./lpuefs", "r+");
     fseek(fp, INODE_TABLE + (i - 1) * INODE_SIZE, SEEK_SET);
     fwrite(inode_area, INODE_SIZE, 1, fp);
     fflush(fp);
@@ -50,7 +50,7 @@ static void reload_inode_entry(unsigned short i) {
 
 // 写目录项
 static void update_dir(void) {
-    fp = fopen("./Ext2", "r+");
+    fp = fopen("./lpuefs", "r+");
     fseek(fp, DIR_START, SEEK_SET);
     fwrite(dir, DIR_SIZE, 1, fp); //原先是读入一整块，修改后读入等于目录项缓冲区
     fflush(fp);
@@ -60,7 +60,7 @@ static void update_dir(void) {
 static void clear_dir(void) {
     char dir_buf[1024];
     memset(dir_buf, -1, 1024);
-    fp = fopen("./Ext2", "r+");
+    fp = fopen("./lpuefs", "r+");
     fseek(fp, DIR_START, SEEK_SET);
     fwrite(dir_buf, DIR_SIZE, 1, fp); 
     fflush(fp);
@@ -68,9 +68,7 @@ static void clear_dir(void) {
 
 // 读目录项
 static void reload_dir(void) {
-    // printf("Debug: Line %d \n", __LINE__);
     fseek(fp, DIR_START, SEEK_SET);
-    // printf("Debug: Line %d \n", __LINE__);
     fread(dir, DIR_SIZE, 1, fp);
     // fclose(fp);
 }
@@ -81,8 +79,7 @@ static void dir_to_hash(void) {
         if (dir[i].inode == -1){
             last_alloc_dir_no = i;
             break;
-        }
-        else{
+        } else{
             insert(dir_table, dir[i].name, dir[i].inode);
         }
     }
@@ -90,7 +87,7 @@ static void dir_to_hash(void) {
 
 // 写block位图
 static void update_block_bitmap(void) {
-    fp = fopen("./Ext2", "r+");
+    fp = fopen("./lpuefs", "r+");
     fseek(fp, BLOCK_BITMAP, SEEK_SET);
     fwrite(bitbuf, BITMAP_SIZE, 1, fp);
     fflush(fp);
@@ -104,7 +101,7 @@ static void reload_block_bitmap(void) {
 
 // 写inode位图
 static void update_inode_bitmap(void) {
-    fp = fopen("./Ext2", "r+");
+    fp = fopen("./lpuefs", "r+");
     fseek(fp, INODE_BITMAP, SEEK_SET);
     fwrite(ibuf, BITMAP_SIZE, 1, fp);
     fflush(fp);
@@ -118,7 +115,7 @@ static void reload_inode_bitmap(void) {
 
 // 写第i个数据块
 static void update_block(unsigned short i) {
-    fp = fopen("./Ext2", "r+");
+    fp = fopen("./lpuefs", "r+");
     fseek(fp, DATA_BLOCK + i * BLOCK_SIZE, SEEK_SET);
     // fseek(fp,0,SEEK_SET);
     fwrite(Buffer, BLOCK_SIZE, 1, fp);
@@ -153,10 +150,9 @@ static int alloc_block(void) {
 
 // 分配一个inode
 static int get_inode(void) {
-    int first_free_inode = 0; // only use tet
+    int first_free_inode = 0; 
     int flag = 0;
-    if (gdt[0].bg_free_inodes_count == 0)
-    {
+    if (gdt[0].bg_free_inodes_count == 0) {
         printf("There is no Inode to be alloced!\n");
         return 0;
     }
@@ -173,8 +169,7 @@ static int get_inode(void) {
 }
 
 // 当前目录中查找文件tmp，并得到该文件的 inode 号，失败返回-1
-static int reserch_file(char tmp[12])
-{
+static int reserch_file(char tmp[12]) {
     int ret = 0;
     reload_dir();
     ret = lookup(dir_table, tmp);
@@ -184,11 +179,8 @@ static int reserch_file(char tmp[12])
     return ret;
 }
 
-/*为新增目录或文件分配 dir_entry
-对于新增文件，只需分配一个inode号
-对于新增目录，除了inode号外，还需要分配数据区存储.和..两个目录项*/
-static void inode_init(unsigned short tmp)
-{
+/*初始化inode信息*/
+static void inode_init(unsigned short tmp) {
     reload_inode_entry(tmp);
 
     inode_area[0].i_size = 0;
@@ -208,7 +200,7 @@ static void remove_block(unsigned short del_num) {
 
     update_block_bitmap();
 
-    gdt[0].bg_free_blocks_count++;
+    gdt[0].bg_free_blocks_count ++;
     update_group_desc();
 }
 
@@ -256,7 +248,7 @@ void initialize_disk(void) {
     if (fp != NULL) {
         fclose(fp);
     }
-    fp = fopen("./Ext2", "w+");      // 此文件大小是4612*512=2361344B，用此文件来模拟文件系统
+    fp = fopen("./lpuefs", "w+");      // 此文件大小是4612*512=2361344B，用此文件来模拟文件系统
     fseek(fp, DISK_START, SEEK_SET); // 将文件指针从0开始
     // 初始化超级块内容
     reload_super_block();
@@ -272,7 +264,6 @@ void initialize_disk(void) {
     // reset dir_entry
     clear_dir();
     reload_dir();
-    
     strcpy(current_path, "[lpue_fs@ /"); // 修改路径名为根目录
     // 初始化组描述符内容
     reload_group_desc();
@@ -288,7 +279,7 @@ void initialize_disk(void) {
     reload_block_bitmap();
     reload_inode_bitmap();
 
-    printf("The ext2 file system has been installed!\n");
+    printf("The lpue file system has been installed!\n");
     check_disk();
     fclose(fp);
 }
@@ -296,21 +287,17 @@ void initialize_disk(void) {
 // 初始化内存
 void initialize_memory(void) {
     int i = 0;
-    for (i = 0; i < 16; i++)
-    {
+    for (i = 0; i < 16; i++) {
         fopen_table[i] = 0;
     }
     strcpy(current_path, "[lpue_fs@ /");
-    fp = fopen("./Ext2", "r+");
-    if (fp == NULL)
-    {
+    fp = fopen("./lpuefs", "r+");
+    if (fp == NULL) {
         printf("The File system does not exist!\n");
         initialize_disk();
-        return;
     }
     reload_super_block();
-    if (strcmp(sb_block[0].sb_volume_name, VOLUME_NAME))
-    {
+    if (strcmp(sb_block[0].sb_volume_name, VOLUME_NAME)) {
         printf("The File system [%s] is not suppoted yet!\n", sb_block[0].sb_volume_name);
         printf("The File system loaded error!\n");
         initialize_disk();
@@ -319,7 +306,6 @@ void initialize_memory(void) {
     dir_table = create_table();
     reload_dir();
     dir_to_hash();
-
     reload_group_desc();
 }
 
@@ -330,10 +316,8 @@ void format(void) {
 }
 
 // 创建文件
-// 缺少类型判断 TODO
 void create(char tmp[12], int type) {
     unsigned short tmpno;
-    // reload_inode_entry(current_dir); //读取当前目录的inode
     printf("reserch_file-%s, ret = %d", tmp, reserch_file(tmp));
     int ret = reserch_file(tmp);
     printf("ret = %d\n",ret);
@@ -384,8 +368,9 @@ void del(char tmp[12]) {
             }
         }
         // 将最后一项元素移动到删除项位置
-        dir[m].inode = dir[last_alloc_dir_no].inode;
-        strcpy(dir[m].name, dir[last_alloc_dir_no].name);
+        dir[m].inode = dir[last_alloc_dir_no - 1].inode;
+        strcpy(dir[m].name, dir[last_alloc_dir_no - 1].name);
+        // printf("m = %d, last_alloc_dir_no = %d\n", m, last_alloc_dir_no);
         last_alloc_dir_no --;
 
         update_dir();    
@@ -410,6 +395,7 @@ int open_file(char tmp[12]) {
             }
             fopen_table[flag] = ret_inode;
             printf("File %s opened!\n", tmp);
+            printf("ret_inode = %d\n", ret_inode);
             return ret_inode;
         }
     } else {
@@ -422,12 +408,16 @@ int open_file(char tmp[12]) {
 void close_file(char tmp[12]) {
     unsigned short flag, i, j, k;
     int ret_inode = reserch_file(tmp);
+    printf("ERRROR %d\n",__LINE__);
     if (ret_inode) {
         if (search_file(ret_inode)) {
+            printf("ERRROR %d\n",__LINE__);
+
             flag = 0;
-            while (fopen_table[flag] != dir[k].inode) {
+            while (fopen_table[flag] != ret_inode) {
                 flag++;
             }
+            printf("ERRROR %d\n",__LINE__);
             fopen_table[flag] = 0;
             printf("File %s closed!\n", tmp);
         } else {
@@ -564,61 +554,72 @@ void write_file(char tmp[12]) // 写文件
 */
 void write_file_append(int fd, const void *buf, unsigned long n) // 写文件
 {
-    unsigned short flag, i, j, k, size = 0, need_blocks, length;
+    unsigned short flag = 1, i, j, k, size = 0, need_blocks;
+    unsigned long block_offset;
+    unsigned long offset = 0;
     Buffer = (char*)malloc(BLOCK_SIZE);
-    length = n;
-    if (flag)
-    {
-        if (search_file(fd))
-        {
+    if (flag) {
+        if (search_file(fd)) {
             reload_inode_entry(fd);
             // i_mode:111b:读,写,执行
             if (!(inode_area[0].i_mode & 2)) {
                 printf("The file can not be writed!\n");
                 return;
             }
+            // 读取当前inode节点的偏移
+            offset = inode_area[0].i_size;
             // 计算需要的数据块数目
-            need_blocks = n / BLOCK_SIZE;
-            if(n % BLOCK_SIZE != 0){
+            need_blocks = (n + offset) / BLOCK_SIZE;
+            if(n % BLOCK_SIZE != 0) {
                 need_blocks ++;
             }
-            // 文件最大 8 个 blocks( 64 * 8 = 512 MB)
-            if (need_blocks < 9) {
-                // 分配文件所需块数目
-                // 因为以覆盖写的方式写，要先判断原有的数据块数目
-                if (inode_area[0].i_blocks <= need_blocks) {
-                    while (inode_area[0].i_blocks < need_blocks)
-                    {
-                        inode_area[0].i_block[inode_area[0].i_blocks] = alloc_block();
-                        inode_area[0].i_blocks++;
-                    }
+            if (need_blocks == inode_area[0].i_blocks) {
+                block_offset = 0;
+                // 当前最后一块中还剩余的内存大小
+                block_offset = offset % BLOCK_SIZE;
+                reload_block(inode_area[0].i_block[inode_area[0].i_blocks]);
+                memcpy(Buffer + block_offset, buf, n);
+                update_block(inode_area[0].i_block[inode_area[0].i_blocks]);
+                inode_area[0].i_size = n + offset;
+            }
+            
+            else if (need_blocks > inode_area[0].i_blocks && need_blocks < 9) {
+                // 申请数据块
+                // 判断还需要增加多少数据块
+                while (inode_area[0].i_blocks < need_blocks) {
+                    inode_area[0].i_block[inode_area[0].i_blocks] = alloc_block();
+                    inode_area[0].i_blocks ++;
                 }
-                else {
-                    while (inode_area[0].i_blocks > need_blocks) {
-                        remove_block(inode_area[0].i_block[inode_area[0].i_blocks - 1]);
-                        inode_area[0].i_blocks--;
-                    }
-                }
-                j = 0;
+                block_offset = 0;
+                // 当前最后一块中还剩余的内存大小
+                // 读出未写之前的最后一块，然后将要写的内容拼接到一起往下写
+                block_offset = offset % BLOCK_SIZE;
+                reload_block(inode_area[0].i_block[inode_area[0].i_blocks]);
+                memcpy(Buffer + block_offset, buf , BLOCK_SIZE - block_offset);
+                update_block(inode_area[0].i_block[inode_area[0].i_blocks]);
+
+                j = inode_area[0].i_blocks + 1;
+                int t = 1;
                 while (j < need_blocks) {
                     if (j != need_blocks - 1) {
                         reload_block(inode_area[0].i_block[j]);
-                        memcpy(Buffer, tempbuf + j * BLOCK_SIZE, BLOCK_SIZE);
+                        memcpy(Buffer, buf - block_offset + t * BLOCK_SIZE, BLOCK_SIZE);
                         update_block(inode_area[0].i_block[j]);
                     }
                     else {
                         reload_block(inode_area[0].i_block[j]);
-                        memcpy(Buffer, tempbuf + j * BLOCK_SIZE, length - j * BLOCK_SIZE);
-                        inode_area[0].i_size = length;
+                        memcpy(Buffer, buf - block_offset + t * BLOCK_SIZE, n - t * BLOCK_SIZE + block_offset);
+                        inode_area[0].i_size = n + offset;
                         update_block(inode_area[0].i_block[j]);
                     }
-                    j++;
+                    j ++;
+                    t ++;
                 }
-                update_inode_entry(dir[k].inode);
             }
             else {
                 printf("Sorry,the max size of a file is 512 MB!\n");
             }
+            update_inode_entry(fd);
         }
         else {
             printf("The file has not opened!\n");
@@ -634,18 +635,25 @@ void ls(void) {
     printf("items          time           mode           size\n"); /* 15*4 */
     reload_dir();
     int index = 0;
+    char formattedTime[13];
     for (int i = 0; i < last_alloc_dir_no; i++) {
         if (dir[i].inode >= 0) {
             printf("%s", dir[i].name);
         }
         index = strlen(dir[i].name);
+        // printf("index len %d\n", index);
         reload_inode_entry(dir[i].inode);
-        while(index > 15) {
+        while(index < 15) {
             printf(" ");
             index ++;
         }
-        printf("%ld", inode_area[0].i_ctime);
-        
+        formatTime(inode_area[0].i_ctime, formattedTime, sizeof(formattedTime));
+        printf("%s", formattedTime);
+        index += 13;
+        while(index < 32) {
+            printf(" ");
+            index ++;
+        }
         switch (inode_area[0].i_mode & 7) {
             case 1:
                 printf("____x");
@@ -669,8 +677,12 @@ void ls(void) {
                 printf("r_w_x");
                 break;
         }
-
-        printf("   %ldbytes \n", inode_area[0].i_size);
+        index += 5;
+        while(index < 47) {
+            printf(" ");
+            index ++;
+        }
+        printf("%ldbytes \n", inode_area[0].i_size);
     }
 }
 
@@ -701,4 +713,6 @@ void check_disk(void)
     printf("blocks per group  : %d(blocks)\n", sb_block[0].sb_blocks_per_group);
     printf("ext2 file size    : %ld(kb)\n", sb_block[0].sb_disk_size * sb_block[0].sb_size_per_block / 1024);
     printf("block size        : %ld(kb)\n", sb_block[0].sb_size_per_block);
+    printf("free block        : %d\n", gdt[0].bg_free_blocks_count);
+    printf("free inode        : %d\n", gdt[0].bg_free_inodes_count);
 }
