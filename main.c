@@ -7,10 +7,8 @@
 int main(int argc,char **argv)
 {
     char command[10],temp[9];
-    initialize_memory();
-    initialize_memory();
-    while(1)
-    {
+    initialize_lpuefs();
+    while(1) {
         printf("%s]#",current_path);
         scanf("%s",command);
         //printf("%s h\n",command);

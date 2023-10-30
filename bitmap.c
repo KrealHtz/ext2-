@@ -1,35 +1,35 @@
 #include <stdio.h>
 
-int find_first_free_bit(unsigned char* bitbuf, int num_bytes) {
+int find_first_free_bit(unsigned char* bit_buf, int num_bytes) {
     for (int i = 0; i < num_bytes; i++) {
-        if (bitbuf[i] != 0xFF) { // ¼ì²é×Ö½ÚÊÇ·ñÓĞ¿ÕÏĞÎ»
-            unsigned char mask = 1; // Î»ÑÚÂë£¬´Ó×îµÍÎ»¿ªÊ¼¼ì²é
+        if (bit_buf[i] != 0xFF) { // ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½Ç·ï¿½ï¿½Ğ¿ï¿½ï¿½ï¿½Î»
+            unsigned char mask = 1; // Î»ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½
 
             for (int j = 0; j < 8; j++) {
-                if ((bitbuf[i] & mask) == 0) { // ¼ì²éÎ»ÊÇ·ñÎª0£¨¿ÕÏĞ£©
-                    return (i * 8) + j; // ·µ»ØÎ»µÄË÷Òı
+                if ((bit_buf[i] & mask) == 0) { // ï¿½ï¿½ï¿½Î»ï¿½Ç·ï¿½Îª0ï¿½ï¿½ï¿½ï¿½ï¿½Ğ£ï¿½
+                    return (i * 8) + j; // ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 }
-                mask <<= 1; // ×óÒÆÎ»ÑÚÂë£¬¼ì²éÏÂÒ»Î»
+                mask <<= 1; // ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Î»
             }
         }
     }
-    return -1; // Ã»ÓĞÕÒµ½¿ÕÏĞÎ»
+    return -1; // Ã»ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½Î»
 }
 
-void set_bit(unsigned char* bitbuf, int bit_index) {
-    int byte_index = bit_index / 8;     // ¼ÆËãÎ»Ë÷Òı¶ÔÓ¦µÄ×Ö½ÚË÷Òı
-    int bit_offset = bit_index % 8;     // ¼ÆËãÎ»Ë÷ÒıÏà¶ÔÓÚ×Ö½ÚµÄÆ«ÒÆÁ¿
+void set_bit(unsigned char* bit_buf, int bit_index) {
+    int byte_index = bit_index / 8;     // ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½
+    int bit_offset = bit_index % 8;     // ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½Úµï¿½Æ«ï¿½ï¿½ï¿½ï¿½
 
-    unsigned char mask = 1 << bit_offset;  // ´´½¨Ò»¸öÑÚÂë£¬½«ÌØ¶¨Î»ÉèÖÃÎª1
+    unsigned char mask = 1 << bit_offset;  // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½Ø¶ï¿½Î»ï¿½ï¿½ï¿½ï¿½Îª1
 
-    bitbuf[byte_index] |= mask;   // ½«Ö¸¶¨Î»ÉèÖÃÎª1
+    bit_buf[byte_index] |= mask;   // ï¿½ï¿½Ö¸ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Îª1
 }
 
-void clear_bit(unsigned char* bitbuf, int bit_index) {
-    int byte_index = bit_index / 8;     // ¼ÆËãÎ»Ë÷Òı¶ÔÓ¦µÄ×Ö½ÚË÷Òı
-    int bit_offset = bit_index % 8;     // ¼ÆËãÎ»Ë÷ÒıÏà¶ÔÓÚ×Ö½ÚµÄÆ«ÒÆÁ¿
+void clear_bit(unsigned char* bit_buf, int bit_index) {
+    int byte_index = bit_index / 8;     // ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½
+    int bit_offset = bit_index % 8;     // ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½Úµï¿½Æ«ï¿½ï¿½ï¿½ï¿½
 
-    unsigned char mask = ~(1 << bit_offset);  // ´´½¨Ò»¸öÑÚÂë£¬½«ÌØ¶¨Î»ÉèÖÃÎª0
+    unsigned char mask = ~(1 << bit_offset);  // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½ï¿½Ø¶ï¿½Î»ï¿½ï¿½ï¿½ï¿½Îª0
 
-    bitbuf[byte_index] &= mask;   // ½«Ö¸¶¨Î»ÉèÖÃÎª0
+    bit_buf[byte_index] &= mask;   // ï¿½ï¿½Ö¸ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Îª0
 }
