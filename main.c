@@ -2,10 +2,9 @@
 #include <string.h>
 #include "main.h"
 #include "init.h"
-#include "bitmap.h"
+#include "file_ops.h"
 
-int main(int argc,char **argv)
-{
+int main(int argc,char **argv) {
     char command[10],temp[9];
     initialize_lpuefs();
     while(1) {

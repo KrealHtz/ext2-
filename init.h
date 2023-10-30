@@ -78,50 +78,26 @@ struct dir_entry //16B
 };
 
 
- unsigned short current_dir;   // 当前目录的节点号 */
- unsigned short last_alloc_dir_no;   // 当前分配到的目录项节点号 */
+extern unsigned short current_dir;   // 当前目录的节点号 */
+extern unsigned short last_alloc_dir_no;   // 当前分配到的目录项节点号 */
+extern unsigned short current_dirlen; // 当前路径长度 */
+extern short fopen_table[16]; // 文件打开表 */
+extern struct super_block sb_buf[1];	// 超级块缓冲区
+extern struct group_desc gd_buf[1];	// 组描述符缓冲区
+extern struct inode inode_workspace[1];  // inode缓冲区
+extern unsigned char bit_buf[512]; // 位图缓冲区
+extern unsigned char ibuf[512];
+extern struct dir_entry dir[DIR_LEN];   // 目录项缓冲区 64*16=1024
+extern char *Buffer;  // 针对数据块的缓冲区
+extern char tempbuf[4096];	// 文件写入缓冲区
+extern HashTable* dir_table; //哈希表存放目录项
+extern FILE *fp;	// 虚拟磁盘指针
 
- unsigned short current_dirlen; // 当前路径长度 */
-
- short fopen_table[16]; // 文件打开表 */
-
- struct super_block sb_buf[1];	// 超级块缓冲区
- struct group_desc gd_buf[1];	// 组描述符缓冲区
- struct inode inode_workspace[1];  // inode缓冲区
- unsigned char bit_buf[512] = {0}; // 位图缓冲区
- unsigned char ibuf[512] = {0};
- struct dir_entry dir[DIR_LEN];   // 目录项缓冲区 64*16=1024
- char *Buffer;  // 针对数据块的缓冲区
- char tempbuf[4096];	// 文件写入缓冲区
- HashTable* dir_table; //哈希表存放目录项
- FILE *fp;	// 虚拟磁盘指针
-
-
-char current_path[256];    // 当前路径名 */
-
- void update_fs_super_block(void);   //更新超级块内容
- void reload_fs_super_block(void);   //加载超级块内容
- void update_fs_group_desc(void);    //更新组描述符内容
- void reload_fs_group_desc(void);    //加载组描述符内容
- void update_inode_info(unsigned short i); //更新indoe表
- void reload_inode_info(unsigned short i); //加载inode表
- void update_group_block_bitmap(void);  //更新块位图
- void reload_group_block_bitmap(void);  //加载块位图
- void update_inode_bitmap(void);  //更新inode位图
- void reload_inode_bitmap(void);  //加载inode位图
- void update_dir(void);//更新目录
- void reload_dir(void);//加载目录
- void update_block(unsigned short i);//更新数据块
- void reload_block(unsigned short i);//加载数据库
- int alloc_block(void);//分配数据块
- int request_inode(void); //得到inode节点
- int reserch_file(char file_name[12]);//查找文件
- void dir_prepare(unsigned short file_name);
- void remove_block(unsigned short del_num);//删除数据块
- void remove_inode(unsigned short del_num);//删除inode节点
- unsigned short search_file(unsigned short Ino);//在打开文件表中查找是否已打开文件
- void sleep(int k);
- void initialize_disk(void);//初始化磁盘
+void sleep(int k);
+//初始化磁盘
+void initialize_disk(void);
+ /*初始化inode信息*/
+void inode_init(unsigned short file_name);
 
 
 #endif // _INIT_H
